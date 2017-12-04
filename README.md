@@ -1,7 +1,9 @@
-wifijammer
+wifijammer-ng
 ==========
 
-Continuously jam all wifi clients and access points within range. The effectiveness of this script is constrained by your wireless card. Alfa cards seem to effectively jam within about a block radius with heavy access point saturation. Granularity is given in the options for more effective targeting. 
+NOT ENDORSED BY Dan McInerney yet.
+
+Continuously jam all wifi clients and access points within range. The effectiveness of this script is constrained by your wireless card. Alfa cards seem to effectively jam within about a block radius with heavy access point saturation. Granularity is given in the options for more effective targeting.
 
 
 Requires: python 2.7, python-scapy, a wireless card capable of injection
@@ -29,44 +31,43 @@ Deauthenticate all devices with which 00:0E:DA:DE:24:8E communicates and skips c
 
 ### Advanced
 ```shell
-python wifijammer.py -c 1 -p 5 -t .00001 -s DL:3D:8D:JJ:39:52 -d --world
+python wifijammer.py -c 1 -p 5 -t .00001 -s DL:3D:8D:JJ:39:52 -d
 ```
 
-* `-c`, Set the monitor mode interface to only listen and deauth clients or APs on channel 1
+* `-f`, [String] Frequency for deauthing (2, 5, all)
 
-* `-p`, Send 5 packets to the client from the AP and 5 packets to the AP from the client along with 5 packets to the broadcast address of the AP
+* `-c`, [list] Set the monitor mode interface to only listen and deauth clients or APs on channel 1
 
-* `-t`, Set a time interval of .00001 seconds between sending each deauth (try this if you get a scapy error like 'no buffer space')
+* `-p`, [int] Send 5 packets to the client from the AP and 5 packets to the AP from the client along with 5 packets to the broadcast address of the AP
 
-* `-s`, Do not deauth the MAC DL:3D:8D:JJ:39:52. Ignoring a certain MAC address is handy in case you want to tempt people to join your access point in cases of wanting to use LANs.py or a Pineapple on them.
+* `-t`, [float] Set a time interval of .00001 seconds between sending each deauth (try this if you get a scapy error like 'no buffer space')
 
-* `-d`, Do not send deauths to access points' broadcast address; this will speed up the deauths to the clients that are found
+* `-s`, [list] Do not deauth the MAC DL:3D:8D:JJ:39:52. Ignoring a certain MAC address is handy in case you want to tempt people to join your access point in cases of wanting to use LANs.py or a Pineapple on them.
 
-* `--world`, Set the max channel to 13. In N. America the max channel standard is 11, but the rest of the world uses 13 channels so use this option if you're not in N. America
+* `-d`, [bool] Do not send deauths to access points' broadcast address; this will speed up the deauths to the clients that are found
+
+* `-k`, [bool] Kill interfering tasks, this is similar to "airmon-ng check kill"
+
+* `-D`, [bool] Detailed print out.
 
 
 ### Walking/driving around
 ```shell
 python wifijammer.py -m 10
 ```
-The `-m` option sets a max number of client/AP combos that the script will attempt to deauth. When the max number is reached, it clears and repopulates its list based on what traffic it sniffs in the area. This allows you to constantly update the deauth list with client/AP combos who have the strongest signal in case you were not stationary. If you want to set a max and not have the deauth list clear itself when the max is hit, just add the -n option like: `-m 10 -n`
+The `-m` option sets a max number of client/AP combos that the script will attempt to deauth. When the max number is reached, it clears and repopulates its list based on what traffic it sniffs in the area. This allows you to constantly update the deauth list with client/AP combos who have the strongest signal in case you were not stationary. If you want to set a max and not have the deauth list clear itself when the max is hit, just add the -n option like: `-m 10`
 
 
 All options:
 
 ```shell
-python wifijammer.py [-a AP MAC] [-c CHANNEL] [-d] [-i INTERFACE] [-m MAXIMUM] [-n] [-p PACKETS] [-s SKIP] [-t TIME INTERVAL]
+python wifijammer.py [-a AP MAC] [-c CHANNEL] [-d] [-i INTERFACE] [-m MAXIMUM] [-k] [-p PACKETS] [-s SKIP] [-t TIME INTERVAL] [-D]
 ```
-
-Technical breakdown
--------
-[How to kick everyone around you off wifi with python](http://danmcinerney.org/how-to-kick-everyone-around-you-off-wifi-with-python/)
-
 
 License
 -------
 
-Copyright (c) 2014, Dan McInerney
+Copyright (c) 2017, MisterBianco
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -88,5 +89,5 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***
 * [danmcinerney.org](http://danmcinerney.org)
-* [![Flattr this](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=DanMcInerney&url=https://github.com/DanMcInerney/wifijammer&title=wifijammer&language=&tags=github&category=software) 
+* [![Flattr this](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=DanMcInerney&url=https://github.com/DanMcInerney/wifijammer&title=wifijammer&language=&tags=github&category=software)
 * [![Analytics](https://ga-beacon.appspot.com/UA-46613304-3/wifijammer/README.md)](https://github.com/igrigorik/ga-beacon)
